@@ -1,5 +1,9 @@
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Colors from 'open-color';
+import { useCallback } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types';
 
 const styles = StyleSheet.create({
   container: {
@@ -51,6 +55,7 @@ const styles = StyleSheet.create({
 });
 
 interface MovieProps {
+  id: number;
   title: string;
   originalTitle: string;
   releaseDate: string;
@@ -59,14 +64,20 @@ interface MovieProps {
 }
 
 const Movie = ({
+  id,
   title,
   originalTitle,
   releaseDate,
   overview,
   posterUrl,
 }: MovieProps) => {
+  const { navigate } =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const onPress = useCallback(() => {
+    navigate('Movie', { id });
+  }, [navigate, id]);
   return (
-    <View style={styles.container}>
+    <TouchableOpacity style={styles.container} onPress={onPress}>
       <View style={styles.poster}>
         {posterUrl != null && (
           <Image style={styles.posterImage} source={{ uri: posterUrl }} />
@@ -78,7 +89,7 @@ const Movie = ({
         <Text style={styles.releaseDateText}>{releaseDate}</Text>
         <Text style={styles.overviewText}>{overview}</Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
