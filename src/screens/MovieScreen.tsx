@@ -10,6 +10,8 @@ import {
   Image,
   Text,
   FlatList,
+  TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { useCallback } from 'react';
 import Colors from 'open-color';
@@ -17,6 +19,8 @@ import Section from '../components/Section';
 import People from '../components/People';
 import YouTube from '../components/YouTube';
 import React from 'react';
+import CalendarModule from '../modules/CalendarModule';
+import dayjs from 'dayjs';
 
 const styles = StyleSheet.create({
   loadingContainer: {
@@ -121,6 +125,21 @@ const MovieScreen = () => {
               style={styles.releaseDateText}>{`개봉일: ${releaseDate}`}</Text>
           </View>
         </View>
+        <TouchableOpacity
+          style={styles.addToCalendarButton}
+          onPress={async () => {
+            try {
+              await CalendarModule.createCalendarEvent(
+                dayjs(releaseDate).valueOf() / 1000,
+                title,
+              );
+              Alert.alert('캘린더 등록이 완료 되었습니다');
+            } catch (error: any) {
+              Alert.alert(error.message);
+            }
+          }}>
+          <Text style={styles.addToCalendarButtonText}>캘린더에 추가하기</Text>
+        </TouchableOpacity>
         <Section title="소개">
           <Text style={styles.overviewText}>{overview}</Text>
         </Section>
