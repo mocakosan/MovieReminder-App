@@ -1,15 +1,40 @@
-import { FlatList, SafeAreaView, StyleSheet } from 'react-native';
+import {
+  FlatList,
+  Platform,
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
+  View,
+} from 'react-native';
 import useMovies from '../hooks/useMovies';
 import Movie from '../components/Movie';
+import Colors from 'open-color';
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.black,
+  },
+  movieList: {
+    padding: 20,
+  },
+  separator: {
+    height: 16,
+  },
+});
 
 const MoviesScreen = () => {
   const { movies } = useMovies();
   return (
-    <SafeAreaView>
+    <SafeAreaView style={styles.container}>
+      {Platform.OS === 'ios' ? (
+        <StatusBar barStyle="light-content" />
+      ) : (
+        <StatusBar barStyle="dark-content" />
+      )}
+
       <FlatList
-        style={styles.movieList}
+        contentContainerStyle={styles.movieList}
         data={movies}
         renderItem={({ item: movie }) => (
           <Movie
@@ -20,6 +45,7 @@ const MoviesScreen = () => {
             posterUrl={movie.posterUrl ?? undefined}
           />
         )}
+        ItemSeparatorComponent={() => <View style={styles.separator}></View>}
       />
     </SafeAreaView>
   );
