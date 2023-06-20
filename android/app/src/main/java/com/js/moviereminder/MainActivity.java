@@ -1,4 +1,4 @@
-package com.js.moviereminderreminder;
+package com.js.moviereminder;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
