@@ -12,6 +12,7 @@ const useMovie = ({ id }: UseMovieParams) => {
     queryKey: ['movie', id],
     queryFn: getMovie,
   });
+
   return {
     movie: data,
     isLoading,

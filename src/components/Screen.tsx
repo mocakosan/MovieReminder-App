@@ -108,7 +108,6 @@ const Screen = ({
           </View>
         </View>
       )}
-
       <View style={styles.content}>{children}</View>
     </SafeAreaView>
   );
