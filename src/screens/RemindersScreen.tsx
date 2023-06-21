@@ -8,9 +8,10 @@ import {
 } from 'react-native';
 import Colors from 'open-color';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+
 import dayjs from 'dayjs';
-import Screen from '../components/Screen';
 import useReminder from '../hooks/useReminder';
+import Screen from '../components/Screen';
 
 const styles = StyleSheet.create({
   reminderList: {
@@ -71,7 +72,7 @@ const RemindersScreen = () => {
                 </Text>
                 {'timestamp' in reminder.trigger && (
                   <Text style={styles.timestampText}>
-                    {dayjs(reminder.trigger.timestamp).format('LLL')}
+                    {dayjs(reminder.trigger.timestamp).format('YY-MM-DD')}
                   </Text>
                 )}
               </View>

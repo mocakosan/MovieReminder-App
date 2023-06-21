@@ -14,12 +14,13 @@ import useMovies from '../hooks/useMovies';
 import Movie from '../components/Movie';
 import Colors from 'open-color';
 import Screen from '../components/Screen';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import { version } from '../../package.json';
+import mobileAds, { MaxAdContentRating } from 'react-native-google-mobile-ads';
 
 const styles = StyleSheet.create({
   container: {
@@ -61,6 +62,14 @@ const MoviesScreen = () => {
   const { movies, isLoading, loadMore, canLoadmore, refresh } = useMovies();
   const { navigate } =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+  const [adsInitiallized, setAdsInitialized] = useState(false);
+  useEffect(() => {
+    (async () => {
+      await mobileAds().initialize();
+      setAdsInitialized(true);
+    })();
+  }, []);
   const renderRightComponent = useCallback(() => {
     return (
       <View style={styles.headerRightComponent}>
@@ -86,7 +95,7 @@ const MoviesScreen = () => {
     <Screen
       renderLeftComponent={renderLeftComponent}
       renderRightComponent={renderRightComponent}>
-      {isLoading ? (
+      {isLoading || !adsInitiallized ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator />
         </View>

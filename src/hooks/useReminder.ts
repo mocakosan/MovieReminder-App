@@ -10,6 +10,8 @@ import notifee, {
 import { Platform } from 'react-native';
 import dayjs from 'dayjs';
 
+const MAX_REMINDER_NUM_FOR_FREE = 2;
+
 const useReminder = () => {
   const [channelId, setChannelId] = useState<string | null>(null);
 
@@ -32,6 +34,11 @@ const useReminder = () => {
   const loadReminders = useCallback(async () => {
     const notifications = await notifee.getTriggerNotifications();
     setReminders(notifications);
+  }, []);
+
+  const canAddReminder = useCallback(async () => {
+    const triggeredNotifications = await notifee.getTriggerNotifications();
+    return triggeredNotifications.length < MAX_REMINDER_NUM_FOR_FREE;
   }, []);
 
   const addReminder = useCallback(
@@ -89,10 +96,20 @@ const useReminder = () => {
     },
     [loadReminders],
   );
+
+  const hasReminder = useCallback(
+    (id: string) => {
+      const reminder = reminders.find(r => r.notification.id === id);
+      return reminder != null;
+    },
+    [reminders],
+  );
   return {
     addReminder,
     removeReminder,
     reminders,
+    hasReminder,
+    canAddReminder,
   };
 };
 

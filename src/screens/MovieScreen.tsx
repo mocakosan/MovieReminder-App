@@ -1,27 +1,30 @@
 import { RouteProp, useRoute } from '@react-navigation/native';
-import Screen from '../components/Screen';
-import { RootStackParamList } from '../types';
-import useMovie from '../hooks/useMovie';
+import React, { useCallback, useRef } from 'react';
 import {
-  View,
   ActivityIndicator,
-  StyleSheet,
-  ScrollView,
-  Image,
-  Text,
-  FlatList,
-  TouchableOpacity,
   Alert,
+  FlatList,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { useCallback } from 'react';
+
 import Colors from 'open-color';
-import Section from '../components/Section';
-import People from '../components/People';
-import YouTube from '../components/YouTube';
-import React from 'react';
-import CalendarModule from '../modules/CalendarModule';
+
 import dayjs from 'dayjs';
+
+import People from '../components/People';
+import RewardAd, { RewardAdRef } from '../components/RewardAd';
+import Section from '../components/Section';
+import useMovie from '../hooks/useMovie';
 import useReminder from '../hooks/useReminder';
+import CalendarModule from '../modules/CalendarModule';
+import { RootStackParamList } from '../types';
+import YouTube from '../components/YouTube';
+import Screen from '../components/Screen';
 
 const styles = StyleSheet.create({
   loadingContainer: {
@@ -90,11 +93,15 @@ const MovieScreen = () => {
   } = useRoute<RouteProp<RootStackParamList, 'Movie'>>();
 
   const { movie, isLoading } = useMovie({ id });
-  const { addReminder } = useReminder();
+  const { addReminder, hasReminder, removeReminder, canAddReminder } =
+    useReminder();
+  const rewardAdRef = useRef<RewardAdRef | null>(null);
+
   const renderMovie = useCallback(() => {
     if (movie == null) {
       return null;
     }
+
     const {
       posterUrl,
       title,
@@ -107,7 +114,7 @@ const MovieScreen = () => {
     } = movie;
 
     const director = crews.find(crew => crew.job === 'Director');
-    const youTube = videos.filter(video => video.site === 'YouTube');
+    const youTubeVideos = videos.filter(video => video.site === 'YouTube');
 
     return (
       <ScrollView contentContainerStyle={styles.content}>
@@ -141,18 +148,62 @@ const MovieScreen = () => {
           }}>
           <Text style={styles.addToCalendarButtonText}>캘린더에 추가하기</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.addToCalendarButton}
-          onPress={async () => {
-            try {
-              await addReminder(movie.id, movie.releaseDate, movie.title);
-              Alert.alert('알림 등록이 완료되었습니다');
-            } catch (error: any) {
-              Alert.alert(error.message);
-            }
-          }}>
-          <Text style={styles.addToCalendarButtonText}>알림 추가하기</Text>
-        </TouchableOpacity>
+        {hasReminder(`${movie.id}`) ? (
+          <TouchableOpacity
+            style={styles.addToCalendarButton}
+            onPress={async () => {
+              try {
+                await removeReminder(`${movie.id}`);
+                Alert.alert('알림 제거가 완료되었습니다.');
+              } catch (error: any) {
+                Alert.alert(error.message);
+              }
+            }}>
+            <Text style={styles.addToCalendarButtonText}>알림 제거하기</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={styles.addToCalendarButton}
+            onPress={async () => {
+              const addReminderHandler = async () => {
+                try {
+                  await addReminder(movie.id, movie.releaseDate, movie.title);
+                  Alert.alert('알림 등록이 완료되었습니다.');
+                } catch (error: any) {
+                  Alert.alert(error.message);
+                }
+              };
+
+              if (await canAddReminder()) {
+                addReminderHandler();
+              } else {
+                Alert.alert(
+                  '광고를 보고 리마인더를 등록하시겠습니까?',
+                  undefined,
+                  [
+                    {
+                      text: '아니요',
+                    },
+                    {
+                      text: '네',
+                      onPress: () => {
+                        rewardAdRef.current?.show({
+                          onRewarded: rewarded => {
+                            if (rewarded) {
+                              addReminderHandler();
+                            }
+                          },
+                        });
+                      },
+                    },
+                  ],
+                );
+              }
+            }}>
+            <Text style={styles.addToCalendarButtonText}>알림 추가하기</Text>
+          </TouchableOpacity>
+        )}
+
         <Section title="소개">
           <Text style={styles.overviewText}>{overview}</Text>
         </Section>
@@ -183,11 +234,11 @@ const MovieScreen = () => {
           />
         </Section>
         <Section title="관련 영상">
-          {youTube.map((video, index) => {
+          {youTubeVideos.map((video, index) => {
             return (
               <React.Fragment key={video.id}>
                 <YouTube title={video.name} youTubeKey={video.key} />
-                {index + 1 < youTube.length && (
+                {index + 1 < youTubeVideos.length && (
                   <View style={styles.verticalSeparator} />
                 )}
               </React.Fragment>
@@ -196,7 +247,8 @@ const MovieScreen = () => {
         </Section>
       </ScrollView>
     );
-  }, [movie, addReminder]);
+  }, [movie, addReminder, hasReminder, removeReminder, canAddReminder]);
+
   return (
     <Screen>
       {isLoading ? (
@@ -206,6 +258,7 @@ const MovieScreen = () => {
       ) : (
         renderMovie()
       )}
+      <RewardAd ref={rewardAdRef} />
     </Screen>
   );
 };
