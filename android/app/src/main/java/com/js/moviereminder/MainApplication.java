@@ -15,7 +15,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import com.js.moviereminder.BuildConfig;
-//import com.microsoft.codepush.react.CodePush;
+import com.microsoft.codepush.react.CodePush;
 import com.moviereminder.MyAppPackage;
 
 public class MainApplication extends Application implements ReactApplication {

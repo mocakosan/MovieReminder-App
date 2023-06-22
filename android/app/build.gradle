@@ -123,13 +123,24 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
+             resValue "string", "CodePushDeploymentKey", '""'
         }
+
+         releaseStaging {
+            signingConfig signingConfigs.debug
+            resValue "string", "CodePushDeploymentKey", '"o3GSk7099w0CXDmNesvyFBIJ_N89effbVSMde"'
+            // Note: It is a good idea to provide matchingFallbacks for the new buildType you create to prevent build issues
+            // Add the following line if not already there
+            matchingFallbacks = ['release']
+        }
+
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
             signingConfig signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            resValue "string", "CodePushDeploymentKey", '"6K5ktcTeO2UzDWyzV45ZgHlm1-dJwIGW5vyPC"'
         }
     }
 
@@ -170,3 +181,9 @@ dependencies {
 }
 
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
+apply from: "../../node_modules/react-native-code-push/android/codepush.gradle"
+android.buildTypes.each { buildType ->
+    // to prevent incorrect long value restoration from strings.xml we need to wrap it with double quotes
+    // https://github.com/microsoft/cordova-plugin-code-push/issues/264
+    buildType.resValue 'string', "CODE_PUSH_APK_BUILD_TIME", String.format("\"%d\"", System.currentTimeMillis())
+}
